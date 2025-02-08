@@ -60,83 +60,123 @@ export function BackgroundPaths({
   const words = title.split(" ");
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#1d0428]">
-      <div className="absolute inset-0">
-        <FloatingPaths position={1} />
-        <FloatingPaths position={-1} />
-      </div>
+    /** 
+     * Container with snap-scrolling:
+     * - snap-y snap-mandatory: vertical snap
+     * - h-screen w-screen, overflow-y-scroll to allow scrolling
+     **/
+    <div className="snap-y snap-mandatory h-screen w-screen overflow-y-scroll">
+      {/* ====== SECTION 1 ====== */}
+      <section className="snap-start relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#1d0428]">
+        <div className="absolute inset-0">
+          <FloatingPaths position={1} />
+          <FloatingPaths position={-1} />
+        </div>
 
-      <div className="relative z-10 container mx-auto px-4 md:px-6 text-center">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 2 }}
-          className="max-w-4xl mx-auto"
-        >
-          {/* Slightly smaller heading */}
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold mb-4 tracking-tighter text-shadow-lg">
-            {words.map((word, wordIndex) => (
-              <span
-                key={wordIndex}
-                className="inline-block mr-4 last:mr-0"
-              >
-                {word.split("").map((letter, letterIndex) => (
-                  <motion.span
-                    key={`${wordIndex}-${letterIndex}`}
-                    initial={{ y: 100, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{
-                      delay: wordIndex * 0.1 + letterIndex * 0.03,
-                      type: "spring",
-                      stiffness: 150,
-                      damping: 25,
-                    }}
-                    className="inline-block text-transparent bg-clip-text 
-                               bg-gradient-to-r from-[#EBD3F8] to-[#AD49E1]"
-                  >
-                    {letter}
-                  </motion.span>
-                ))}
-              </span>
-            ))}
-          </h1>
-
-          {/* Slightly smaller motto */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 1 }}
-            className="text-lg md:text-xl text-[#EBD3F8] mb-8 text-shadow-sm"
+        <div className="relative z-10 container mx-auto px-4 md:px-6 text-center">
+          {/* Slower fade for the container */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 3 }}
+            className="max-w-4xl mx-auto"
           >
-            {motto}
-          </motion.p>
+            {/* Title */}
+            <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold mb-4 tracking-tighter text-shadow-lg">
+              {words.map((word, wordIndex) => (
+                <span key={wordIndex} className="inline-block mr-4 last:mr-0">
+                  {word.split("").map((letter, letterIndex) => (
+                    <motion.span
+                      key={`${wordIndex}-${letterIndex}`}
+                      initial={{ y: 100, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{
+                        delay: wordIndex * 0.12 + letterIndex * 0.05,
+                        type: "spring",
+                        stiffness: 100,
+                        damping: 20,
+                      }}
+                      className="inline-block text-transparent bg-clip-text 
+                                 bg-gradient-to-r from-[#EBD3F8] to-[#AD49E1]"
+                    >
+                      {letter}
+                    </motion.span>
+                  ))}
+                </span>
+              ))}
+            </h1>
 
-          {/* Slightly smaller button */}
-          <div
-            className="inline-block group relative bg-gradient-to-b from-[#AD49E1]/10 to-[#7A1CAC]/10
-                       p-px rounded-2xl backdrop-blur-lg overflow-hidden shadow-lg hover:shadow-xl 
-                       transition-shadow duration-300"
-          >
-            <Button
-              variant="ghost"
-              className="rounded-[1.15rem] px-6 py-4 text-base font-semibold 
-                         backdrop-blur-md bg-[#7A1CAC]/95 hover:bg-[#7A1CAC] text-[#EBD3F8] 
-                         transition-all duration-300 group-hover:-translate-y-0.5 
-                         border border-[#AD49E1]/10 hover:shadow-md hover:shadow-[#AD49E1]/50"
+            {/* Motto with smaller bottom margin */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.5, duration: 2 }}
+              className="text-lg md:text-xl text-[#EBD3F8] mb-4 text-shadow-sm"
             >
-              <span className="opacity-90 group-hover:opacity-100 transition-opacity">
-                Get Started
-              </span>
-              <span
-                className="ml-3 opacity-70 group-hover:opacity-100 group-hover:translate-x-1.5 
-                           transition-all duration-300"
-              >
-                →
-              </span>
-            </Button>
-          </div>
+              {motto}
+            </motion.p>
+
+            {/* Button linking to second section below */}
+            <div
+              className="inline-block group relative bg-gradient-to-b 
+                         from-[#AD49E1]/10 to-[#7A1CAC]/10 
+                         p-px rounded-2xl backdrop-blur-lg overflow-hidden 
+                         shadow-lg hover:shadow-xl transition-shadow duration-300"
+            >
+              <a href="#explanation">
+                <Button
+                  variant="ghost"
+                  className="rounded-[1.15rem] px-6 py-4 text-base font-semibold 
+                             backdrop-blur-md bg-[#7A1CAC]/95 hover:bg-[#7A1CAC] 
+                             text-[#EBD3F8] transition-all duration-300 
+                             group-hover:-translate-y-0.5 border border-[#AD49E1]/10 
+                             hover:shadow-md hover:shadow-[#AD49E1]/50"
+                >
+                  <span className="opacity-90 group-hover:opacity-100 transition-opacity">
+                    Get Started
+                  </span>
+                  <span
+                    className="ml-3 opacity-70 group-hover:opacity-100 
+                               group-hover:translate-x-1.5 
+                               transition-all duration-300"
+                  >
+                    →
+                  </span>
+                </Button>
+              </a>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ====== SECTION 2: "What do we do?" ====== */}
+      <section
+        id="explanation"
+        className="snap-start relative min-h-screen w-full flex items-center justify-center 
+                   bg-[#1d0428] text-white p-8"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+          viewport={{ once: true }}
+          className="max-w-3xl text-center"
+        >
+          <h2 className="text-3xl md:text-5xl font-bold mb-6">
+            What do we do?
+          </h2>
+          <p className="text-lg md:text-xl leading-relaxed">
+            MitigateAI analyzes your portfolio risk using{" "}
+            <span className="font-semibold text-[#AD49E1]">Machine Learning</span>, 
+            including K-Means clustering, Value at Risk (VaR), and other 
+            performance metrics. We combine these insights into a{" "}
+            <span className="font-semibold text-[#AD49E1]">risk score</span>, 
+            and gamify the experience with challenges, tips, and achievements. 
+            Scroll to discover how you can optimize your portfolio and elevate 
+            your risk management strategy!
+          </p>
         </motion.div>
-      </div>
+      </section>
     </div>
   );
 }
