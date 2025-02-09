@@ -1,148 +1,32 @@
-RiskEdge - AI-Powered Investment Minigame
-
-Introduction
-
-RiskEdge is an AI-powered minigame designed to help beginners understand the risks and potential returns of their investments. In this game, players take on the role of a broker advising clients on stock portfolios based on real market risk metrics. The backend utilizes financial calculations and predictive AI to provide an engaging and educational experience.
-
-Features
-
-Client Profile Generation: Dynamically creates unique clients with different risk preferences and investment goals.
-
-Stock Data Retrieval & Risk Assessment:
-
-Volatility: Measures price fluctuations over time.
-
-Sharpe Ratio: Assesses risk-adjusted returns.
-
-Value at Risk (VaR): Estimates potential loss.
-
-Predictive AI for Portfolio Returns: Uses historical stock data to estimate expected returns.
-
-Portfolio Risk Calculation: Computes overall risk based on user allocations and market trends.
-
-Interactive Frontend: Users can search for stocks, allocate funds, and receive real-time feedback on their portfolio choices.
-
-Tech Stack
-
-Frontend
-
-React (Next.js) + Tailwind CSS
-
-Dynamic UI elements including:
-
-Search bar with intelligent stock suggestions.
-
-Interactive stock allocation components.
-
-Risk visualization charts.
-
-Backend
-
-FastAPI (Python) for API handling
-
-Machine Learning Models for Risk Classification (K-Means Clustering)
-
-Financial Data Processing (NumPy, pandas, yfinance)
-
-Portfolio Analysis Metrics (Sharpe Ratio, Volatility, Variance-Covariance Matrix)
-
-Installation & Setup
-
-Prerequisites
-
-Node.js (for frontend)
-
-Python (for backend)
-
-Setup Backend
-
-Clone the repository:
-
-git clone https://github.com/your-repo/RiskEdge.git
-cd RiskEdge/backend
-
-Create a virtual environment:
-
-python -m venv venv
-source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-
-Install dependencies:
-
-pip install -r requirements.txt
-
-Run the backend server:
-
-uvicorn main:app --reload
-
-Setup Frontend
-
-Navigate to the frontend folder:
-
-cd ../frontend
-
-Install dependencies:
-
-npm install
-
-Start the frontend server:
-
-npm run dev
-
-Usage
-
-Open the frontend in a browser (http://localhost:3000).
-
-Choose a difficulty level and investment duration.
-
-Get assigned a client and analyze their profile.
-
-Search for stocks and allocate funds based on the client’s needs.
-
-Confirm your portfolio and review the results.
-
-Learn from feedback and improve your next strategy!
-
-API Endpoints
-
-Method
-
-Endpoint
-
-Description
-
-GET
-
-/generate_client/{difficulty}/{time_span}
-
-Generates a unique client profile
-
-GET
-
-/stock_prices
-
-Retrieves stock prices and risk metrics
-
-POST
-
-/analyze_portfolio
-
-Evaluates portfolio risk and expected returns
-
-Future Improvements
-
-Real-time stock price integration
-
-More sophisticated AI for portfolio optimization
-
-Enhanced visual analytics
-
-License
-
-MIT License
-
-Contact
-
-For any inquiries or contributions, feel free to reach out!
-
-This README provides an overview of RiskEdge, its functionality, and how to set it up and use it.
-
+# RiskEdge - AI-Powered Trading Risk Assessment Minigame
+
+## 🏦 Overview
+**RiskEdge** is an AI-powered minigame designed to help beginners in trading understand investment risks and potential returns. Players take on the role of a **broker**, advising clients on stock portfolios based on real market risk metrics. The game simulates a real-world investment experience, providing insights into risk assessment and portfolio optimization.
+
+## 🎮 How It Works
+1. **Customize Game Settings:** Choose a difficulty level and investment duration.
+2. **Find a Client:** The AI generates a client with an investment goal, risk tolerance, and a personal backstory for engagement.
+3. **Select Stocks & Allocate Funds:** Choose stocks and decide how much to allocate based on real-time stock data.
+4. **AI Risk Analysis:** The backend assesses portfolio risk using financial metrics such as **Sharpe Ratio, Volatility, and Value at Risk (VaR)**.
+5. **View Results & Feedback:** See final returns, risk level, and receive tips to optimize future investment strategies.
+
+## 🛠️ Tech Stack
+### **Frontend (React + Next.js)**
+- **Next.js** – Server-side rendering & optimized performance.
+- **Tailwind CSS** – Modern, responsive UI.
+- **Recharts** – Data visualization for portfolio insights.
+- **Aceternity UI** – Clean and modern UI components.
+
+### **Backend (FastAPI)**
+- **FastAPI** – Handles API requests for stock data, risk calculations, and client generation.
+- **Yahoo Finance API (`yfinance`)** – Fetches real-time stock prices.
+- **Scikit-learn** – Used for **K-Means Clustering** to categorize stocks into risk levels.
+- **NumPy & Pandas** – For data preprocessing and risk calculations.
+
+### **AI-Powered Features**
+- **Dynamic Client Generation:** AI creates unique client profiles based on difficulty and investment timeline.
+- **Risk Classification:** Uses **K-Means Clustering** to classify stocks into **low, medium, and high-risk categories**.
+- **Portfolio Risk Analysis:** Evaluates risk using:
+  - **Volatility** – Measures price fluctuations.
+  - **Sharpe Ratio** – Assesses risk-adjusted returns.
+  - **Value at Risk (VaR)** – Estimates potential losses in extreme cases.
