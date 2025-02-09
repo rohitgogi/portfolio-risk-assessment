@@ -75,8 +75,8 @@ const LoaderCore = ({
             </div>
             <span
               className={cn(
-                "text-[#EBD3F8]",
-                value === index && "text-[#AD49E1] opacity-100"
+                "bg-clip-text text-transparent bg-gradient-to-r from-[#EBD3F8] to-[#AD49E1]",
+                value === index && "opacity-100"
               )}
             >
               {loadingState.text}
@@ -123,22 +123,14 @@ export const MultiStepLoader = ({
     <AnimatePresence mode="wait">
       {loading && (
         <motion.div
-          initial={{
-            opacity: 0,
-          }}
-          animate={{
-            opacity: 1,
-          }}
-          exit={{
-            opacity: 0,
-          }}
-          className="w-full h-full fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-2xl bg-[#1d0428]/80"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="w-full h-full fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-2xl bg-[#1d0428]"
         >
           <div className="h-96 relative">
             <LoaderCore value={currentState} loadingStates={loadingStates} />
           </div>
-
-          <div className="bg-gradient-to-t inset-x-0 z-20 bottom-0 bg-[#1d0428] h-full absolute [mask-image:radial-gradient(900px_at_center,transparent_30%,#1d0428)]" />
         </motion.div>
       )}
     </AnimatePresence>

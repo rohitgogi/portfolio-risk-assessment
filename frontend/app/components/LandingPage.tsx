@@ -32,7 +32,7 @@ export default function LandingPage() {
           transition={{ delay: 0.5, duration: 1 }}
           className="text-lg md:text-xl text-[#EBD3F8] mt-4 text-shadow-sm"
         >
-          Learn how to maximize profits while mitigating risks as a broker.
+          Learn how to maximize profits while mitigating risks, acting as a broker.
         </motion.p>
 
         {/* Get Started Button (Links to Customization Page) */}

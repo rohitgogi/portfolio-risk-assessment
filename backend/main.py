@@ -6,34 +6,33 @@ import pandas as pd
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import MinMaxScaler
-from game_logic import generate_client  # Import AI-powered function
+from game_logic import generate_client
 import time
+from stock_analysis import fetch_stock_data, calculate_daily_returns, calculate_volatility, calculate_sharpe_ratio
+import random
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# CORS Configuration
+# Allow frontend requests from localhost:3000
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_origins=["*"],  # Only allow requests from frontend
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
 )
 
-# =================== AI-POWERED CLIENT GENERATION ===================
 
 @app.get("/generate_client/{difficulty}/{time_span}")
 async def get_client(difficulty: str, time_span: int):
     client_profile = generate_client(difficulty, time_span)
-    return client_profile  # ✅ Now returns JSON properly
-
-# =================== STOCK ANALYSIS & RISK ASSESSMENT ===================
+    return client_profile
 
 class StockRequest(BaseModel):
     tickers: list[str]
 
 def fetch_multiple_stocks(tickers, period="1y"):
-    """Fetch historical stock data."""
     data = {}
     for ticker in tickers:
         stock = yf.Ticker(ticker)
@@ -43,12 +42,10 @@ def fetch_multiple_stocks(tickers, period="1y"):
     return pd.DataFrame(data)
 
 def preprocess_data(data):
-    """Calculate stock returns."""
     returns = data.pct_change().dropna()
     return returns
 
 def classify_stocks(returns, n_clusters=3):
-    """Cluster stocks based on risk factors."""
     volatilities = returns.std()
     sharpe_ratios = returns.mean() / volatilities
     var_95 = np.percentile(returns, 5, axis=0)
@@ -58,7 +55,7 @@ def classify_stocks(returns, n_clusters=3):
     scaled_features = scaler.fit_transform(features)
 
     if len(returns.columns) == 1:
-        return np.array([0])  # Default Low Risk (category 0)
+        return np.array([0])
 
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
     labels = kmeans.fit_predict(scaled_features)
@@ -66,7 +63,6 @@ def classify_stocks(returns, n_clusters=3):
     return labels
 
 def calculate_risk_score(returns, labels):
-    """Compute risk score for each stock."""
     volatilities = returns.std()
     sharpe_ratios = returns.mean() / volatilities
     var_95 = np.percentile(returns, 5)
@@ -81,7 +77,6 @@ def calculate_risk_score(returns, labels):
     return risk_scores
 
 def calculate_portfolio_risk(returns, weights):
-    """Calculate overall portfolio risk."""
     cov_matrix = returns.cov()
     weights = np.array(weights)
     portfolio_variance = np.dot(weights.T, np.dot(cov_matrix, weights))
@@ -89,7 +84,6 @@ def calculate_portfolio_risk(returns, weights):
 
 @app.post("/analyze_portfolio")
 async def analyze_portfolio(request: StockRequest):
-    """Analyze the risk of a given portfolio."""
     tickers = request.tickers
     if len(tickers) < 3:
         return {"error": "Please enter at least 3 stock tickers for clustering."}
@@ -105,7 +99,7 @@ async def analyze_portfolio(request: StockRequest):
     labels = classify_stocks(returns)
     risk_scores = calculate_risk_score(returns, labels)
 
-    weights = [1/len(tickers)] * len(tickers)  # Equal weights
+    weights = [1/len(tickers)] * len(tickers)
     portfolio_risk = calculate_portfolio_risk(returns, weights)
 
     results = []
@@ -121,57 +115,112 @@ async def analyze_portfolio(request: StockRequest):
         "portfolio_risk": float(portfolio_risk)
     }
 
-# Stock symbols
-STOCK_SYMBOLS = [
-    "AAPL", "MSFT", "GOOGL", "AMZN", "META", "TSLA", "NVDA", "JPM", "V", "JNJ",
-    "NFLX", "PYPL", "DIS", "KO", "PEP", "MCD", "INTC", "IBM", "CSCO", "ORCL",
-    "QCOM", "BA", "GE", "XOM", "CVX", "PFE", "MRNA", "GILD", "ABT", "T",
-    "VZ", "NKE", "ADBE", "CRM", "WMT", "TGT", "LOW", "HD", "GS", "MS",
-    "C", "BAC", "PLTR", "AMD", "SHOP", "SNAP", "ROKU", "DDOG", "SQ",
-    "TWLO", "DOCU", "ZM", "PANW", "NET", "MDB", "CRWD", "ZS", "F",
-    "GM", "UBER", "LYFT", "RBLX", "COIN", "SOFI", "DKNG", "PTON",
-    "BABA", "TCEHY", "NIO", "XPEV", "LI", "JD", "BIDU", "BYND",
-    "RIVN", "LCID", "FSLY", "W", "DASH", "GME", "AMC", "BBBY",  # BBBY might be delisted
-    "SPCE", "ARKK", "SPY", "QQQ", "DIA", "IWM", "VTI", "ARKG",
-    "ARKF", "BITO"
-]
-
-# Cache for stock prices (valid for 5 minutes)
-stock_cache = {}
-cache_expiry = 0
+STOCK_PRICES = {
+    "AAPL": { "name": "Apple Inc.", "price": 227.63, "risk": "medium" },
+    "MSFT": { "name": "Microsoft Corp.", "price": 409.75, "risk": "medium" },
+    "GOOGL": { "name": "Alphabet Inc.", "price": 185.34, "risk": "medium" },
+    "AMZN": { "name": "Amazon.com Inc.", "price": 229.15, "risk": "medium" },
+    "META": { "name": "Meta Platforms Inc.", "price": 714.52, "risk": "medium" },
+    "TSLA": { "name": "Tesla Inc.", "price": 361.62, "risk": "medium" },
+    "NVDA": { "name": "NVIDIA Corp.", "price": 129.84, "risk": "medium" },
+    "JPM": { "name": "JP Morgan Chase & Co.", "price": 275.80, "risk": "medium" },
+    "V": { "name": "Visa Inc.", "price": 348.02, "risk": "medium" },
+    "JNJ": { "name": "Johnson & Johnson", "price": 153.12, "risk": "medium" },
+    "NFLX": { "name": "Netflix Inc.", "price": 1013.93, "risk": "medium" },
+    "PYPL": { "name": "PayPal Holdings Inc.", "price": 77.31, "risk": "medium" },
+    "DIS": { "name": "Walt Disney Co.", "price": 110.86, "risk": "medium" },
+    "KO": { "name": "Coca-Cola Co.", "price": 63.84, "risk": "medium" },
+    "PEP": { "name": "PepsiCo Inc.", "price": 144.58, "risk": "medium" },
+    "MCD": { "name": "McDonald's Corp.", "price": 294.30, "risk": "medium" },
+    "INTC": { "name": "Intel Corp.", "price": 19.10, "risk": "medium" },
+    "IBM": { "name": "IBM Corp.", "price": 252.34, "risk": "medium" },
+    "CSCO": { "name": "Cisco Systems Inc.", "price": 62.27, "risk": "medium" },
+    "ORCL": { "name": "Oracle Corp.", "price": 174.46, "risk": "medium" },
+    "QCOM": { "name": "Qualcomm Inc.", "price": 167.96, "risk": "medium" },
+    "BA": { "name": "Boeing Co.", "price": 181.49, "risk": "medium" },
+    "GE": { "name": "General Electric Co.", "price": 205.28, "risk": "medium" },
+    "XOM": { "name": "Exxon Mobil Corp.", "price": 108.89, "risk": "medium" },
+    "CVX": { "name": "Chevron Corp.", "price": 152.62, "risk": "medium" },
+    "PFE": { "name": "Pfizer Inc.", "price": 25.74, "risk": "medium" },
+    "MRNA": { "name": "Moderna Inc.", "price": 32.60, "risk": "medium" },
+    "GILD": { "name": "Gilead Sciences Inc.", "price": 96.04, "risk": "medium" },
+    "ABT": { "name": "Abbott Laboratories", "price": 129.07, "risk": "medium" },
+    "T": { "name": "AT&T Inc.", "price": 24.54, "risk": "medium" },
+    "VZ": { "name": "Verizon Communications Inc.", "price": 39.88, "risk": "medium" },
+    "NKE": { "name": "Nike Inc.", "price": 68.68, "risk": "medium" },
+    "ADBE": { "name": "Adobe Inc.", "price": 433.07, "risk": "medium" },
+    "CRM": { "name": "Salesforce Inc.", "price": 325.83, "risk": "medium" },
+    "WMT": { "name": "Walmart Inc.", "price": 101.15, "risk": "medium" },
+    "TGT": { "name": "Target Corp.", "price": 131.35, "risk": "medium" }
+}
 
 @app.get("/stock_prices")
 async def get_stock_prices():
-    """Fetch real-time stock prices for predefined tickers, using caching to improve performance."""
-    global stock_cache, cache_expiry
+    return STOCK_PRICES
 
-    # Return cached data if valid
-    if time.time() < cache_expiry:
-        return stock_cache
+class PortfolioResultRequest(BaseModel):
+    tickers: list[str]
+    weights: list[float]  # Percentage allocation per stock
+    initial_amount: float
+    goal_amount: float
+    time_span: int  # Simulation time in months
 
-    try:
-        # Fetch multiple stocks at once
-        stock_data = yf.download(STOCK_SYMBOLS, period="1d")["Close"].iloc[-1]
-    except Exception as e:
-        return {"error": f"Yahoo Finance API Error: {str(e)}"}
+@app.post("/get_result")
+async def get_result(request: PortfolioResultRequest):
+    tickers = request.tickers
+    weights = request.weights
+    initial_amount = request.initial_amount
+    goal_amount = request.goal_amount
+    time_span = request.time_span
 
-    formatted_data = {}
-    for symbol, price in stock_data.items():
-        try:
-            if np.isnan(price):  # Check for NaN values
-                print(f"Warning: No price data for {symbol}, skipping...")
-                continue  # Skip stocks with missing data
+    if len(tickers) < 3 or len(weights) != len(tickers):
+        return {"error": "Invalid input: Ensure at least 3 stocks and correct weights."}
 
-            formatted_data[symbol] = {
-                "name": yf.Ticker(symbol).info.get("shortName", symbol),
-                "price": round(price, 2),
-                "risk": "medium"  # Placeholder risk level (you can classify dynamically)
-            }
-        except Exception as e:
-            print(f"Error fetching data for {symbol}: {str(e)}")
+    # Fetch stock data
+    data = fetch_multiple_stocks(tickers, period=f"{time_span}mo")
+    if data.empty:
+        return {"error": "No stock data available for simulation."}
 
-    # Update cache (valid for 5 minutes)
-    stock_cache = formatted_data
-    cache_expiry = time.time() + 300  
+    returns = preprocess_data(data)
+    portfolio_risk = calculate_portfolio_risk(returns, weights)
+    
+    # Calculate final portfolio value (assume simple compounding returns)
+    final_returns = (returns.mean() * (time_span / 12))  # Annualized return converted to given time span
+    portfolio_growth = np.dot(weights, final_returns) * initial_amount
+    final_value = initial_amount + portfolio_growth
 
-    return formatted_data
+    # Compute risk metrics
+    sharpe_ratio = calculate_sharpe_ratio(returns)
+    volatility = calculate_volatility(returns)
+    
+    sharpe_ratio = np.mean(sharpe_ratio)  # Take mean if it's a Series
+    volatility = np.mean(volatility)      # Take mean if it's a Series
+
+    # Ensure they are scalars, not Series
+    sharpe_ratio = float(sharpe_ratio)
+    volatility = float(volatility)
+
+    # **Determine Outcome**
+    if final_value >= goal_amount or (sharpe_ratio > 1.5 and volatility < 0.2):
+        message = random.choice([
+            "🚀 You won! Quit your day job and become a full-time trader!",
+            "💰 Genius move! You're on track to be the next Warren Buffett!",
+            "📈 Congrats! The stock gods are smiling upon you."
+        ])
+        status = "Win"
+    else:
+        message = random.choice([
+            "📉 You lost! Maybe stick to index funds, champ.",
+            "💸 Oof, that was rough. Consider a new career path.",
+            "🤡 You just outperformed 2008. Time to reflect."
+        ])
+        status = "Loss"
+
+    return {
+        "final_value": round(final_value, 2),
+        "goal_amount": goal_amount,
+        "sharpe_ratio": round(sharpe_ratio, 2),
+        "volatility": round(volatility, 2),
+        "status": status,
+        "message": message
+    }

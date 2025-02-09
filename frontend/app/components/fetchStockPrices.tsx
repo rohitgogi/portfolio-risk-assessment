@@ -7,8 +7,17 @@ export function useStockPrices() {
   const [error, setError] = useState<string | null>(null);
 
   async function fetchPrices() {
+    setLoading(true); // Ensure loading state resets
     try {
+      console.log("Fetching stock prices...");
       const response = await axios.get("http://127.0.0.1:8000/stock_prices");
+
+      console.log("Stock Prices Response:", response.data);
+
+      if (!response.data || typeof response.data !== "object") {
+        throw new Error("Invalid stock data received");
+      }
+
       setStockPrices(response.data);
       setError(null);
     } catch (err) {
@@ -22,13 +31,13 @@ export function useStockPrices() {
   useEffect(() => {
     fetchPrices();
 
-    // Retry fetching stock prices every 10 seconds if it fails
+    // Retry every 10 seconds if error occurs
     const interval = setInterval(() => {
       if (error) fetchPrices();
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [error]);
+  }, []); // 🔥 Ensure this only runs on mount
 
   return { stockPrices, loading, error };
 }

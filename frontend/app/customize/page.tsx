@@ -1,23 +1,25 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Link from "next/link";
 import { Button } from "@/app/components/button";
 import { Particles } from "@/app/components/Particles";
 import { useState } from "react";
+import { useRouter } from 'next/navigation';
 
 export default function CustomizationPage() {
+  const router = useRouter();
   const [difficulty, setDifficulty] = useState("medium");
   const [timeSpan, setTimeSpan] = useState(6);
 
+  const handleStartGame = () => {
+    router.push(`/loading?difficulty=${difficulty}&time=${timeSpan}`);
+  };
+
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-[#030303] overflow-hidden text-white">
-      {/* Particle Background */}
       <Particles className="absolute inset-0" quantity={150} color="#AD49E1" staticity={50} ease={30} />
 
-      {/* Content Container */}
       <div className="relative z-10 text-center max-w-4xl px-6">
-        {/* Title Animation */}
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -29,9 +31,7 @@ export default function CustomizationPage() {
           </span>
         </motion.h1>
 
-        {/* Customization Options */}
         <div className="mt-6 space-y-6">
-          {/* Difficulty Selection */}
           <div className="text-lg">
             <p className="mb-2">Select Difficulty:</p>
             <select
@@ -45,7 +45,6 @@ export default function CustomizationPage() {
             </select>
           </div>
 
-          {/* Time Span Selection */}
           <div className="text-lg">
             <p className="mb-2">Select Simulation Time Span (Months):</p>
             <input
@@ -59,23 +58,21 @@ export default function CustomizationPage() {
           </div>
         </div>
 
-        {/* Start Game Button */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1, duration: 1 }}
           className="mt-8"
         >
-          <Link href="/client">
-            <Button
-              variant="ghost"
-              className="px-6 py-4 rounded-xl text-lg font-semibold bg-[#7A1CAC]/95 hover:bg-[#7A1CAC] 
-                        text-[#EBD3F8] transition-all duration-300 
-                        border border-[#AD49E1]/20 hover:shadow-lg"
-            >
-              Find your Client →
-            </Button>
-          </Link>
+          <Button
+            variant="ghost"
+            className="px-6 py-4 rounded-xl text-lg font-semibold bg-[#7A1CAC]/95 hover:bg-[#7A1CAC] 
+                      text-[#EBD3F8] transition-all duration-300 
+                      border border-[#AD49E1]/20 hover:shadow-lg"
+            onClick={handleStartGame}
+          >
+            Find your Client →
+          </Button>
         </motion.div>
       </div>
     </div>
