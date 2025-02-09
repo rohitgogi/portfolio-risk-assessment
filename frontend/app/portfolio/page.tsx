@@ -6,17 +6,24 @@ import { PlaceholdersAndVanishInput } from "@/app/components/placeholders-and-va
 import StockCard from "@/app/components/StockCard";
 import AllocationBar from "@/app/components/AllocationBar";
 import { Particles } from "@/app/components/Particles";
-import Link from "next/link";
 
 export default function PortfolioPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const [stockPrices, setStockPrices] = useState<{ [key: string]: { name: string; price: number } }>({});
   const [selectedStocks, setSelectedStocks] = useState<{ [key: string]: number }>({});
   const [fundsRemaining, setFundsRemaining] = useState(0);
   const [investmentGoal, setInvestmentGoal] = useState(0);
   const [investmentAmount, setInvestmentAmount] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  // Define difficulty levels
+  const DIFFICULTY_SETTINGS = {
+    easy: { investmentAmount: 50000, investmentGoal: 70000 },
+    medium: { investmentAmount: 75000, investmentGoal: 120000 },
+    hard: { investmentAmount: 90000, investmentGoal: 150000 }
+  };
 
   // Hardcoded stock prices
   const HARDCODED_STOCK_PRICES = {
@@ -26,63 +33,18 @@ export default function PortfolioPage() {
     "AMZN": { name: "Amazon.com Inc.", price: 229.15 },
     "META": { name: "Meta Platforms Inc.", price: 714.52 },
     "TSLA": { name: "Tesla Inc.", price: 361.62 },
-    "NVDA": { name: "NVIDIA Corp.", price: 129.84 },
-    "JPM": { name: "JP Morgan Chase & Co.", price: 275.80 },
-    "V": { name: "Visa Inc.", price: 348.02 },
-    "JNJ": { name: "Johnson & Johnson", price: 153.12 },
-    "NFLX": { name: "Netflix Inc.", price: 1013.93 },
-    "PYPL": { name: "PayPal Holdings Inc.", price: 77.31 },
-    "DIS": { name: "Walt Disney Co.", price: 110.86 },
-    "KO": { name: "Coca-Cola Co.", price: 63.84 },
-    "PEP": { name: "PepsiCo Inc.", price: 144.58 },
-    "MCD": { name: "McDonald's Corp.", price: 294.30 },
-    "INTC": { name: "Intel Corp.", price: 19.10 },
-    "IBM": { name: "IBM Corp.", price: 252.34 },
-    "CSCO": { name: "Cisco Systems Inc.", price: 62.27 },
-    "ORCL": { name: "Oracle Corp.", price: 174.46 },
-    "QCOM": { name: "Qualcomm Inc.", price: 167.96 },
-    "BA": { name: "Boeing Co.", price: 181.49 },
-    "GE": { name: "General Electric Co.", price: 205.28 },
-    "XOM": { name: "Exxon Mobil Corp.", price: 108.89 },
-    "CVX": { name: "Chevron Corp.", price: 152.62 },
-    "PFE": { name: "Pfizer Inc.", price: 25.74 },
-    "MRNA": { name: "Moderna Inc.", price: 32.60 },
-    "GILD": { name: "Gilead Sciences Inc.", price: 96.04 },
-    "ABT": { name: "Abbott Laboratories", price: 129.07 },
-    "T": { name: "AT&T Inc.", price: 24.54 },
-    "VZ": { name: "Verizon Communications Inc.", price: 39.88 },
-    "NKE": { name: "Nike Inc.", price: 68.68 },
-    "ADBE": { name: "Adobe Inc.", price: 433.07 },
-    "CRM": { name: "Salesforce Inc.", price: 325.83 },
-    "WMT": { name: "Walmart Inc.", price: 101.15 },
-    "TGT": { name: "Target Corp.", price: 131.35 }
   };
 
   useEffect(() => {
-    // Read the chosen difficulty from the URL query parameters
     const difficulty = searchParams.get("difficulty") || "easy";
-    console.log("Difficulty:", difficulty); // Debugging log
+    console.log("🎯 Selected Difficulty:", difficulty);
 
-    // Set static values based on difficulty
-    let staticValues;
-    if (difficulty === "easy") {
-      staticValues = { investmentAmount: 50000, investmentGoal: 70000 };
-    } else if (difficulty === "medium") {
-      staticValues = { investmentAmount: 75000, investmentGoal: 120000 };
-    } else if (difficulty === "hard") {
-      staticValues = { investmentAmount: 90000, investmentGoal: 150000 };
-    } else {
-      staticValues = { investmentAmount: 50000, investmentGoal: 70000 };
-    }
+    const settings = DIFFICULTY_SETTINGS[difficulty] || DIFFICULTY_SETTINGS.easy;
+    setInvestmentAmount(settings.investmentAmount);
+    setInvestmentGoal(settings.investmentGoal);
+    setFundsRemaining(settings.investmentAmount);
 
-    // Set state values using the static numbers
-    setInvestmentAmount(staticValues.investmentAmount);
-    setInvestmentGoal(staticValues.investmentGoal);
-    setFundsRemaining(staticValues.investmentAmount);
-
-    // Set your stock prices
     setStockPrices(HARDCODED_STOCK_PRICES);
-
     setLoading(false);
   }, [searchParams]);
 
@@ -91,50 +53,41 @@ export default function PortfolioPage() {
     const previousAllocation = selectedStocks[ticker] || 0;
     const newFundsRemaining =
       fundsRemaining + (previousAllocation * stockPrice) - (amount * stockPrice);
+
     if (newFundsRemaining < 0) return;
+
     setSelectedStocks((prev) => ({ ...prev, [ticker]: amount }));
     setFundsRemaining(newFundsRemaining);
   }
 
   function handleStockSubmit(stock: { symbol: string; name: string }) {
     if (!selectedStocks[stock.symbol]) {
-      // Start allocation at 0 if the stock isn't already added
       handleAllocation(stock.symbol, 0);
     }
   }
 
-  // When the "Confirm Portfolio" button is clicked, navigate to the /results page
   function confirmPortfolio() {
     if (Object.keys(selectedStocks).length === 0) {
       alert("Please select at least one stock before proceeding!");
       return;
     }
-  
-    alert("Navigating to Results Page!");
-    console.log("Navigating to Results Page with:");
-    console.log("Investment Goal:", investmentGoal);
-    console.log("Investment Amount:", investmentAmount);
-    console.log("Selected Stocks:", selectedStocks);
-  
+
+    console.log("🚀 Navigating to Results Page with:");
+    console.log("📊 Investment Goal:", investmentGoal);
+    console.log("💰 Investment Amount:", investmentAmount);
+    console.log("📈 Selected Stocks:", selectedStocks);
+
+    const encodedStocks = encodeURIComponent(JSON.stringify(selectedStocks));
+
     router.push(
-      `/results?investmentGoal=${investmentGoal}&investmentAmount=${investmentAmount}&selectedStocks=${encodeURIComponent(
-        JSON.stringify(selectedStocks)
-      )}`
+      `/results?investmentGoal=${investmentGoal}&investmentAmount=${investmentAmount}&selectedStocks=${encodedStocks}`
     );
   }
-  
-
-  const placeholders = [
-    "Search for a stock...",
-    "Try 'AAPL' for Apple...",
-    "Enter 'GOOGL' for Alphabet...",
-    "Looking for Tesla? Type 'TSLA'...",
-  ];
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p>Loading client profile...</p>
+        <p>Loading portfolio settings...</p>
       </div>
     );
   }
@@ -149,7 +102,12 @@ export default function PortfolioPage() {
         <h1 className="text-4xl font-bold text-center mb-6">Select Your Portfolio</h1>
 
         <PlaceholdersAndVanishInput
-          placeholders={placeholders}
+          placeholders={[
+            "Search for a stock...",
+            "Try 'AAPL' for Apple...",
+            "Enter 'GOOGL' for Alphabet...",
+            "Looking for Tesla? Type 'TSLA'...",
+          ]}
           onSubmit={handleStockSubmit}
           disabled={Object.keys(selectedStocks).length >= 5}
         />
@@ -157,15 +115,10 @@ export default function PortfolioPage() {
         {/* Display Remaining Funds & Investment Goal */}
         <p className="mt-4 text-xl">
           Funds Remaining:{" "}
-          <span className="font-bold text-[#EBD3F8]">
-            ${fundsRemaining.toFixed(2)}
-          </span>
+          <span className="font-bold text-[#EBD3F8]">${fundsRemaining.toFixed(2)}</span>
         </p>
         <p className="text-md text-gray-400">
-          Investment Goal:{" "}
-          <span className="font-semibold">
-            ${investmentGoal.toFixed(2)}
-          </span>
+          Investment Goal: <span className="font-semibold">${investmentGoal.toFixed(2)}</span>
         </p>
 
         {/* Selected Stocks Section */}
@@ -193,7 +146,6 @@ export default function PortfolioPage() {
         </div>
 
         {/* Confirm Portfolio Button */}
-        <Link href="/results">
         <button
           onClick={confirmPortfolio}
           className={`mt-6 px-6 py-3 rounded-lg text-lg font-semibold transition-all ${
@@ -205,7 +157,6 @@ export default function PortfolioPage() {
         >
           Confirm Portfolio →
         </button>
-        </Link>
       </div>
     </div>
   );

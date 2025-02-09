@@ -7,34 +7,46 @@ import { Particles } from "@/app/components/Particles";
 
 export default function ClientPage() {
   const [client, setClient] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const clientData = searchParams.get('clientData');
-  const stockData = searchParams.get('stockData');
 
   useEffect(() => {
-    if (clientData && stockData) {
-      try {
-        const parsedClientData = JSON.parse(decodeURIComponent(clientData));
-        setClient(parsedClientData);
-      } catch (err) {
-        console.error("Error parsing client data:", err);
-        setError("Failed to load client profile.");
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      setError("No client data found.");
-      setLoading(false);
-    }
-  }, [clientData, stockData]);
+    try {
+      const clientData = searchParams.get("clientData");
+      const stockData = searchParams.get("stockData");
 
-  if (loading) return <div className="text-white text-center mt-20">Loading client profile...</div>;
-  if (error) return <div className="text-red-500 text-center mt-20">{error}</div>;
-  if (!client) return <div className="text-red-500 text-center mt-20">No client data found.</div>;
+      console.log("🔍 Raw clientData:", clientData);
+      console.log("🔍 Raw stockData:", stockData);
+
+      if (!clientData || !stockData) {
+        throw new Error("No client or stock data found in URL.");
+      }
+
+      // Try decoding and parsing safely
+      let decodedClientData;
+      try {
+        decodedClientData = JSON.parse(decodeURIComponent(clientData));
+      } catch (decodeError) {
+        console.error("❌ Failed to decode client data:", decodeError);
+        throw new Error("Invalid client data format.");
+      }
+
+      setClient(decodedClientData);
+    } catch (err: any) {
+      console.error("⚠️ Error parsing client data:", err);
+      setError(err.message || "Failed to load client data.");
+    }
+  }, [searchParams]);
+
+  if (error) {
+    return <div className="text-red-500 text-center mt-20">{error}</div>;
+  }
+
+  if (!client) {
+    return <div className="text-white text-center mt-20">Loading client profile...</div>;
+  }
 
   const clientInfo = [
     { label: "Name", value: client.name },

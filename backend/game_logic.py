@@ -16,16 +16,16 @@ client = groq.Client(api_key=GROQ_API_KEY)
 # Define static values for each difficulty level
 STATIC_VALUES = {
     "easy": {
-         "investment_amount": 50000,
-         "investment_goal": "70000"
+         "investment_amount": 75000,
+         "investment_goal": "120000"
     },
     "medium": {
          "investment_amount": 75000,
          "investment_goal": "120000"
     },
     "hard": {
-         "investment_amount": 90000,
-         "investment_goal": "150000"
+         "investment_amount": 75000,
+         "investment_goal": "120000"
     }
 }
 
