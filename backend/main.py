@@ -7,6 +7,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import MinMaxScaler
 from game_logic import generate_client  # Import AI-powered function
+import time
 
 app = FastAPI()
 
@@ -119,3 +120,58 @@ async def analyze_portfolio(request: StockRequest):
         "stocks": results,
         "portfolio_risk": float(portfolio_risk)
     }
+
+# Stock symbols
+STOCK_SYMBOLS = [
+    "AAPL", "MSFT", "GOOGL", "AMZN", "META", "TSLA", "NVDA", "JPM", "V", "JNJ",
+    "NFLX", "PYPL", "DIS", "KO", "PEP", "MCD", "INTC", "IBM", "CSCO", "ORCL",
+    "QCOM", "BA", "GE", "XOM", "CVX", "PFE", "MRNA", "GILD", "ABT", "T",
+    "VZ", "NKE", "ADBE", "CRM", "WMT", "TGT", "LOW", "HD", "GS", "MS",
+    "C", "BAC", "PLTR", "AMD", "SHOP", "SNAP", "ROKU", "DDOG", "SQ",
+    "TWLO", "DOCU", "ZM", "PANW", "NET", "MDB", "CRWD", "ZS", "F",
+    "GM", "UBER", "LYFT", "RBLX", "COIN", "SOFI", "DKNG", "PTON",
+    "BABA", "TCEHY", "NIO", "XPEV", "LI", "JD", "BIDU", "BYND",
+    "RIVN", "LCID", "FSLY", "W", "DASH", "GME", "AMC", "BBBY",  # BBBY might be delisted
+    "SPCE", "ARKK", "SPY", "QQQ", "DIA", "IWM", "VTI", "ARKG",
+    "ARKF", "BITO"
+]
+
+# Cache for stock prices (valid for 5 minutes)
+stock_cache = {}
+cache_expiry = 0
+
+@app.get("/stock_prices")
+async def get_stock_prices():
+    """Fetch real-time stock prices for predefined tickers, using caching to improve performance."""
+    global stock_cache, cache_expiry
+
+    # Return cached data if valid
+    if time.time() < cache_expiry:
+        return stock_cache
+
+    try:
+        # Fetch multiple stocks at once
+        stock_data = yf.download(STOCK_SYMBOLS, period="1d")["Close"].iloc[-1]
+    except Exception as e:
+        return {"error": f"Yahoo Finance API Error: {str(e)}"}
+
+    formatted_data = {}
+    for symbol, price in stock_data.items():
+        try:
+            if np.isnan(price):  # Check for NaN values
+                print(f"Warning: No price data for {symbol}, skipping...")
+                continue  # Skip stocks with missing data
+
+            formatted_data[symbol] = {
+                "name": yf.Ticker(symbol).info.get("shortName", symbol),
+                "price": round(price, 2),
+                "risk": "medium"  # Placeholder risk level (you can classify dynamically)
+            }
+        except Exception as e:
+            print(f"Error fetching data for {symbol}: {str(e)}")
+
+    # Update cache (valid for 5 minutes)
+    stock_cache = formatted_data
+    cache_expiry = time.time() + 300  
+
+    return formatted_data

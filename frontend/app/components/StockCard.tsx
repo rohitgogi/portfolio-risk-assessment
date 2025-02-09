@@ -1,32 +1,32 @@
-import { motion } from "framer-motion";
+import React from "react";
 
-interface StockCardProps {
-  stock: { ticker: string; name: string; risk: string; price: number };
+interface StockProps {
+  stock: {
+    ticker: string;
+    name: string;
+    price: number;
+    risk?: string; // Risk is now optional
+  };
   allocated: number;
   onAllocate: (ticker: string, amount: number) => void;
 }
 
-export default function StockCard({ stock, allocated, onAllocate }: StockCardProps) {
+export default function StockCard({ stock, allocated, onAllocate }: StockProps) {
+  const riskLevel = stock.risk ? stock.risk.toUpperCase() : "MEDIUM"; // Default to "MEDIUM" if missing
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="bg-gray-800 rounded-lg p-4 shadow-lg w-full"
-    >
+    <div className="p-4 bg-gray-800 rounded-lg shadow-lg text-white">
       <h3 className="text-xl font-bold">{stock.name} ({stock.ticker})</h3>
-      <p className="text-sm text-gray-400">Risk: {stock.risk.toUpperCase()}</p>
-      <p className="text-lg font-semibold">${stock.price}</p>
-      
+      <p className="text-sm text-gray-400">Risk: {riskLevel}</p>
+      <p className="text-lg font-semibold">${stock.price.toFixed(2)}</p>
+
       <input
         type="number"
-        min="0"
-        max="20000"
-        step="100"
-        className="w-full p-2 mt-2 text-black rounded-lg"
+        className="mt-2 w-full px-2 py-1 rounded text-black"
         value={allocated}
-        onChange={(e) => onAllocate(stock.ticker, Number(e.target.value))}
+        onChange={(e) => onAllocate(stock.ticker, parseFloat(e.target.value) || 0)}
+        min="0"
       />
-    </motion.div>
+    </div>
   );
 }
