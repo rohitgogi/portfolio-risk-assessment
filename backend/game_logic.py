@@ -17,15 +17,15 @@ client = groq.Client(api_key=GROQ_API_KEY)
 STATIC_VALUES = {
     "easy": {
          "investment_amount": 75000,
-         "investment_goal": "120000"
+         "investment_goal": "100000"
     },
     "medium": {
          "investment_amount": 75000,
-         "investment_goal": "120000"
+         "investment_goal": "100000"
     },
     "hard": {
          "investment_amount": 75000,
-         "investment_goal": "120000"
+         "investment_goal": "100000"
     }
 }
 

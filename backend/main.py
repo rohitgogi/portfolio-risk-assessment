@@ -23,6 +23,29 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
+# Annualized returns (approximate past performance)
+ANNUALIZED_RETURNS = {
+    "AAPL": 0.18, "MSFT": 0.21, "GOOGL": 0.16, "AMZN": 0.19, "META": 0.23,
+    "TSLA": 0.29, "NVDA": 0.30, "JPM": 0.12, "V": 0.14, "JNJ": 0.10,
+    "NFLX": 0.17, "PYPL": 0.15, "DIS": 0.08, "KO": 0.07, "PEP": 0.09,
+    "MCD": 0.12, "INTC": 0.05, "IBM": 0.04, "CSCO": 0.06, "ORCL": 0.10,
+    "QCOM": 0.11, "BA": 0.09, "GE": 0.08, "XOM": 0.12, "CVX": 0.11,
+    "PFE": 0.10, "MRNA": 0.18, "GILD": 0.09, "ABT": 0.11, "T": 0.04,
+    "VZ": 0.05, "NKE": 0.13, "ADBE": 0.20, "CRM": 0.19, "WMT": 0.07,
+    "TGT": 0.08, "LOW": 0.12, "HD": 0.13, "GS": 0.11, "MS": 0.12,
+    "C": 0.08, "BAC": 0.10, "PLTR": 0.22, "AMD": 0.25, "SHOP": 0.24,
+    "SNAP": 0.16, "ROKU": 0.20, "DDOG": 0.18, "SQ": 0.19, "TWLO": 0.17,
+    "DOCU": 0.12, "ZM": 0.14, "PANW": 0.22, "NET": 0.20, "MDB": 0.23,
+    "CRWD": 0.21, "ZS": 0.19, "F": 0.07, "GM": 0.08, "UBER": 0.15,
+    "LYFT": 0.12, "RBLX": 0.18, "COIN": 0.25, "SOFI": 0.22, "DKNG": 0.20,
+    "PTON": 0.10, "BABA": 0.09, "TCEHY": 0.10, "NIO": 0.21, "XPEV": 0.20,
+    "LI": 0.19, "JD": 0.11, "BIDU": 0.10, "BYND": 0.07, "RIVN": 0.18,
+    "LCID": 0.17, "FSLY": 0.14, "W": 0.13, "DASH": 0.15, "GME": 0.12,
+    "AMC": 0.09, "BBBY": 0.06, "SPCE": 0.14, "ARKK": 0.19, "SPY": 0.08,
+    "QQQ": 0.10, "DIA": 0.07, "IWM": 0.11, "VTI": 0.09, "ARKG": 0.17,
+    "ARKF": 0.18, "BITO": 0.23
+}
+
 
 @app.get("/generate_client/{difficulty}/{time_span}")
 async def get_client(difficulty: str, time_span: int):
@@ -224,3 +247,10 @@ async def get_result(request: PortfolioResultRequest):
         "status": status,
         "message": message
     }
+
+def get_annualized_return(ticker: str):
+    """
+    Returns the hardcoded annualized return for the given stock ticker.
+    If the stock is not in our predefined list, defaults to 10% (0.10).
+    """
+    return ANNUALIZED_RETURNS.get(ticker, 0.10)  # Default 10% return if not found
