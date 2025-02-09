@@ -25,37 +25,28 @@ export default function CustomizationPage() {
           className="text-5xl sm:text-6xl md:text-7xl font-bold leading-tight tracking-wide text-shadow-lg"
         >
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#EBD3F8] to-[#AD49E1]">
-            RiskEdge
+            Game Customization
           </span>
         </motion.h1>
 
-        {/* Customization Options with Staggered Animations */}
+        {/* Customization Options */}
         <div className="mt-6 space-y-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 1 }}
-            className="text-lg"
-          >
+          {/* Difficulty Selection */}
+          <div className="text-lg">
             <p className="mb-2">Select Difficulty:</p>
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value)}
-              className="px-4 py-2 bg-[#1d0428] text-[#EBD3F8] border border-[#AD49E1] rounded-md focus:outline-none focus:ring-2 focus:ring-[#AD49E1]"
+              className="px-4 py-2 text-black rounded-md"
             >
               <option value="easy">Easy</option>
               <option value="medium">Medium</option>
               <option value="hard">Hard</option>
-              <option value="extreme">Extreme</option>
             </select>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 1 }}
-            className="text-lg"
-          >
+          {/* Time Span Selection */}
+          <div className="text-lg">
             <p className="mb-2">Select Simulation Time Span (Months):</p>
             <input
               type="number"
@@ -63,26 +54,26 @@ export default function CustomizationPage() {
               onChange={(e) => setTimeSpan(Number(e.target.value))}
               min={1}
               max={24}
-              className="px-4 py-2 bg-[#1d0428] text-[#EBD3F8] border border-[#AD49E1] rounded-md focus:outline-none focus:ring-2 focus:ring-[#AD49E1] w-20"
+              className="px-4 py-2 text-black rounded-md w-20"
             />
-          </motion.div>
+          </div>
         </div>
 
         {/* Start Game Button */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.5, duration: 1 }}
+          transition={{ delay: 1, duration: 1 }}
           className="mt-8"
         >
-          <Link href="/game">
+          <Link href="/client">
             <Button
               variant="ghost"
               className="px-6 py-4 rounded-xl text-lg font-semibold bg-[#7A1CAC]/95 hover:bg-[#7A1CAC] 
                         text-[#EBD3F8] transition-all duration-300 
                         border border-[#AD49E1]/20 hover:shadow-lg"
             >
-              Start Game →
+              Find your Client →
             </Button>
           </Link>
         </motion.div>

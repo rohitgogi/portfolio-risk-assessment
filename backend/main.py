@@ -6,24 +6,33 @@ import pandas as pd
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import MinMaxScaler
-from fastapi.middleware.cors import CORSMiddleware
+from game_logic import generate_client  # Import AI-powered function
 
 app = FastAPI()
 
-
-# Add CORS middleware (keep your existing configuration)
+# CORS Configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Add your frontend URL
+    allow_origins=["http://localhost:3000"],  # Frontend URL
     allow_credentials=True,
-    allow_methods=["*"],  # This allows all methods, including OPTIONS
+    allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# =================== AI-POWERED CLIENT GENERATION ===================
+
+@app.get("/generate_client/{difficulty}/{time_span}")
+async def get_client(difficulty: str, time_span: int):
+    client_profile = generate_client(difficulty, time_span)
+    return client_profile  # ✅ Now returns JSON properly
+
+# =================== STOCK ANALYSIS & RISK ASSESSMENT ===================
 
 class StockRequest(BaseModel):
     tickers: list[str]
 
 def fetch_multiple_stocks(tickers, period="1y"):
+    """Fetch historical stock data."""
     data = {}
     for ticker in tickers:
         stock = yf.Ticker(ticker)
@@ -33,10 +42,12 @@ def fetch_multiple_stocks(tickers, period="1y"):
     return pd.DataFrame(data)
 
 def preprocess_data(data):
+    """Calculate stock returns."""
     returns = data.pct_change().dropna()
     return returns
 
 def classify_stocks(returns, n_clusters=3):
+    """Cluster stocks based on risk factors."""
     volatilities = returns.std()
     sharpe_ratios = returns.mean() / volatilities
     var_95 = np.percentile(returns, 5, axis=0)
@@ -45,18 +56,16 @@ def classify_stocks(returns, n_clusters=3):
     scaler = MinMaxScaler()
     scaled_features = scaler.fit_transform(features)
 
-    # If there’s only 1 stock, assign it a default risk category
     if len(returns.columns) == 1:
-        return np.array([0])  # Default to Low Risk (category 0)
+        return np.array([0])  # Default Low Risk (category 0)
 
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
     labels = kmeans.fit_predict(scaled_features)
 
     return labels
 
-
-
 def calculate_risk_score(returns, labels):
+    """Compute risk score for each stock."""
     volatilities = returns.std()
     sharpe_ratios = returns.mean() / volatilities
     var_95 = np.percentile(returns, 5)
@@ -70,8 +79,8 @@ def calculate_risk_score(returns, labels):
     
     return risk_scores
 
-
 def calculate_portfolio_risk(returns, weights):
+    """Calculate overall portfolio risk."""
     cov_matrix = returns.cov()
     weights = np.array(weights)
     portfolio_variance = np.dot(weights.T, np.dot(cov_matrix, weights))
@@ -79,16 +88,16 @@ def calculate_portfolio_risk(returns, weights):
 
 @app.post("/analyze_portfolio")
 async def analyze_portfolio(request: StockRequest):
+    """Analyze the risk of a given portfolio."""
     tickers = request.tickers
     if len(tickers) < 3:
         return {"error": "Please enter at least 3 stock tickers for clustering."}
 
     data = fetch_multiple_stocks(tickers)
-    if data.empty:  # Check if stock data is missing
+    if data.empty:
         return {"error": "No stock data found for the provided tickers."}
 
     returns = preprocess_data(data)
-    
     if returns.empty:
         return {"error": "Insufficient stock data to compute risk."}
 
@@ -110,4 +119,3 @@ async def analyze_portfolio(request: StockRequest):
         "stocks": results,
         "portfolio_risk": float(portfolio_risk)
     }
-
